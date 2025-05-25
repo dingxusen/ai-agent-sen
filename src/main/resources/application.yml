@@ -1,6 +1,18 @@
 spring:
   application:
     name: ai-agent-sen
+  ai:
+    dashscope:
+      api-key: sk-1ec4bc38f4c640e793131135747157ad
+      chat:
+        options:
+          model: qwen-plus
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: deepseek-r1:1.5b
+
+
 server:
   port: 8123
   servlet:
@@ -16,7 +28,7 @@ springdoc:
   group-configs:
     - group: 'default'
       paths-to-match: '/**'
-      packages-to-scan: com.yupi.yuaiagent.controller
+      packages-to-scan: com.sen.aiagentsen.controller
 # knife4j
 knife4j:
   enable: true
