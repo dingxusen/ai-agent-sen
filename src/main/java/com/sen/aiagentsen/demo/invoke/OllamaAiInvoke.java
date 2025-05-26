@@ -16,7 +16,7 @@ public class OllamaAiInvoke implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        AssistantMessage output = ollamaChatModel.call(new Prompt("你好，这是我第一次使用Ollama调用deepseek的API"))
+        AssistantMessage output = ollamaChatModel.call(new Prompt("你好，deepseek"))
                 .getResult()
                 .getOutput();
         System.out.println(output.getText());
