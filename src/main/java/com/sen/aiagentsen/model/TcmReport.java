@@ -24,10 +24,11 @@ import java.io.Serializable;
 @TableName(value = "love_report")
 public class TcmReport implements Serializable {
     @Serial
+    //Java 序列化版本号，确保类在反序列化时兼容。
     private static final long serialVersionUID = 1L;
 
     /**
-     * 主键ID
+     * 主键ID自增
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
