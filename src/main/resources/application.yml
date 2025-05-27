@@ -3,7 +3,7 @@ spring:
     name: ai-agent-sen
   ai:
     dashscope:
-      api-key: sk-1ec4bc38f4c640e793131135747157ad
+      api-key: sk-469f14f297b84d74ba8391c5cbe6a631
       chat:
         options:
           model: qwen-plus
@@ -12,6 +12,12 @@ spring:
       chat:
         model: deepseek-r1:1.5b
 
+
+  dataSource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    Url: jdbc:mysql://127.0.0.1:3306/aiagent?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
 
 server:
   port: 8123

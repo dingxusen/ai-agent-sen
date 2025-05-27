@@ -2,6 +2,9 @@ package com.sen.aiagentsen.app;
 
 import com.sen.aiagentsen.advisor.MyLoggerAdvisor;
 import com.sen.aiagentsen.advisor.ReReadingAdvisor;
+import com.sen.aiagentsen.chatMemory.DatabaseChatMemory;
+import com.sen.aiagentsen.chatMemory.FileBasedChatMemory;
+import com.sen.aiagentsen.mapper.TcmReportMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -11,6 +14,8 @@ import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
@@ -44,27 +49,50 @@ public class TCMapp {
 
     /**
      * TCMapp客户端初始化
-     * @param ollamaChatModel
+     * @param dashscopeChatModel
      */
-    public TCMapp(ChatModel ollamaChatModel) {
-        //        // 初始化基于文件的对话记忆
+//    public TCMapp(ChatModel dashscopeChatModel) {
+//        // 初始化基于文件的对话记忆
 //        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
 //        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
-        //初始化基于内存的对话记忆
-        ChatMemory chatMemory = new InMemoryChatMemory();
+//
+//        //初始化基于内存的对话记忆
+//        //ChatMemory chatMemory = new InMemoryChatMemory();
+//
+//        //初始化对话客户端
+//        chatClient = ChatClient.builder(dashscopeChatModel)
+//                .defaultSystem(SYSTEM_PROMPT)
+//                .defaultAdvisors(
+//                        //对话记忆
+//                        new MessageChatMemoryAdvisor(chatMemory),
+//                        //日志记录
+//                        new MyLoggerAdvisor()
+////                        //重读发送一次prompt
+////                        new ReReadingAdvisor()
+//                )
+//                .build();
+//    }
+
+
+    public TCMapp(ChatModel dashscopeChatModel, TcmReportMapper tcmReportMapper) {
+
+        ChatMemory chatMemory = new DatabaseChatMemory(tcmReportMapper);
+
+
         //初始化对话客户端
-        chatClient = ChatClient.builder(ollamaChatModel)
+        chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
                         //对话记忆
-                        new MessageChatMemoryAdvisor(chatMemory),
+                        new MessageChatMemoryAdvisor(chatMemory)
                         //日志记录
-                        new MyLoggerAdvisor(),
-                        //重读发送一次prompt
-                        new ReReadingAdvisor()
+//                        ,new MyLoggerAdvisor()
+//                        //重读发送一次prompt
+//                        ,new ReReadingAdvisor()
                 )
                 .build();
     }
+
     /**
      * AI 基础对话（支持多轮对话记忆）
      * @param message
@@ -82,5 +110,27 @@ public class TCMapp {
         String content = chatResponse.getResult().getOutput().getText();
         log.info("content: {}", content);
         return content;
+    }
+
+    record TCMReport(String title, List<String> suggestions){
+    }
+
+    /**
+     * AI 结构化输出
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public TCMReport doChatWithReport(String message, String chatId) {
+        TCMReport tcmReport = chatClient
+                .prompt(SYSTEM_PROMPT + "每次对话后都要生成诊断结果，标题为{用户名}的中医诊断报告，内容为建议列表")
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .call()
+                .entity(TCMReport.class);
+
+        log.info("tcmReport: {}", tcmReport);
+        return tcmReport;
     }
 }

@@ -28,4 +28,15 @@ class TCMappTest {
         Assertions.assertNotNull(answer);
 
     }
+
+
+
+    @Test
+    void doChatWithReport() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "我最近总是感到疲倦，晚上睡不好觉，白天也没精神，我应该怎么办？";
+        TCMapp.TCMReport tcmReport = tcmapp.doChatWithReport(message, chatId);
+        Assertions.assertNotNull(tcmReport);
+
+    }
 }
